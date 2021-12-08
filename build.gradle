@@ -1,0 +1,48 @@
+plugins {
+    id "com.github.johnrengelman.shadow" version "7.1.0"
+    id 'org.jetbrains.kotlin.jvm' version '1.6.0'
+    id "dev.jacomet.logging-capabilities" version "0.9.0"
+    id 'io.vertx.vertx-plugin' version "1.3.0"
+    id "com.github.ben-manes.versions" version "0.39.0"
+}
+
+group 'org.example'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation "org.jetbrains.kotlin:kotlin-stdlib"
+
+    implementation(
+        "io.vertx:vertx-lang-kotlin-coroutines",
+        "io.vertx:vertx-web",
+        "io.vertx:vertx-auth-jwt",
+        "io.vertx:vertx-web-api-contract",
+        "io.vertx:vertx-auth-oauth2",
+    )
+}
+
+vertx {
+    mainVerticle = "elkx.App"
+    vertxVersion = "4.2.1"
+}
+
+dependencyUpdates {
+    checkConstraints = true
+
+    rejectVersionIf {
+        final version = it.candidate.version.toLowerCase()
+
+        [
+            "m", // milestone
+            "alpha",
+            "beta",
+            "eap",
+            "rc",
+            "cr",
+        ].any { version.contains(it) }
+    }
+}
