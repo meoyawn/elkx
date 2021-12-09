@@ -16,7 +16,7 @@ class AppTest {
     private companion object {
         val vertx = Vertx.vertx()!!
 
-        const val port = 8082
+        val port = (9000..10000).random()
 
         val deploy = vertx.deployVerticle(
             App(),
@@ -45,5 +45,6 @@ class AppTest {
             .await()
 
         assertEquals(expected = 200, actual = r.statusCode())
+        assertEquals(expected = JsonObject(), actual = r.bodyAsJsonObject())
     }
 }

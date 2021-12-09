@@ -1,7 +1,10 @@
 package elkx
 
 import io.vertx.config.ConfigRetriever
+import io.vertx.core.http.HttpHeaders
 import io.vertx.core.http.HttpServer
+import io.vertx.core.http.impl.MimeMapping
+import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.kotlin.coroutines.CoroutineVerticle
@@ -37,7 +40,10 @@ class App : CoroutineVerticle() {
                 post(Routes.JSON)
                     .handler(BodyHandler.create(false))
                     .handler { ctx ->
-                        ctx.response().end()
+                        val inp = ctx.bodyAsJson
+                        ctx.response()
+                            .putHeader(HttpHeaders.CONTENT_TYPE, MimeMapping.getMimeTypeForExtension("json"))
+                            .end(JsonObject().toBuffer())
                     }
             })
             .listen(port, "127.0.0.1")
