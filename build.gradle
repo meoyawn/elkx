@@ -17,12 +17,26 @@ dependencies {
     implementation "org.jetbrains.kotlin:kotlin-stdlib"
 
     implementation(
+        "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2",
+        "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.5.2",
+    )
+
+    implementation(
         "io.vertx:vertx-lang-kotlin-coroutines",
         "io.vertx:vertx-web",
-        "io.vertx:vertx-auth-jwt",
-        "io.vertx:vertx-web-api-contract",
-        "io.vertx:vertx-auth-oauth2",
+//        "io.vertx:vertx-web-api-contract",
+        "io.vertx:vertx-config",
     )
+
+    implementation 'org.eclipse.elk:org.eclipse.elk.graph.json:0.7.1'
+
+    testImplementation(
+        'org.junit.jupiter:junit-jupiter-api:5.8.2',
+        'org.jetbrains.kotlin:kotlin-test',
+
+        "io.vertx:vertx-web-client",
+    )
+
 }
 
 vertx {
@@ -45,4 +59,8 @@ dependencyUpdates {
             "cr",
         ].any { version.contains(it) }
     }
+}
+
+test {
+    useJUnitPlatform()
 }
