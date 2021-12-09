@@ -28,7 +28,10 @@ dependencies {
         "io.vertx:vertx-config",
     )
 
-    implementation 'org.eclipse.elk:org.eclipse.elk.graph.json:0.7.1'
+    implementation(
+        'org.eclipse.elk:org.eclipse.elk.graph.json:0.7.1',
+        'org.eclipse.elk:org.eclipse.elk.alg.layered:0.7.1',
+    )
 
     testImplementation(
         'org.junit.jupiter:junit-jupiter-api:5.8.2',

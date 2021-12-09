@@ -1,14 +1,21 @@
 package elkx
 
+import com.google.gson.Gson
+import com.google.gson.JsonObject
 import io.vertx.config.ConfigRetriever
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.http.HttpServer
 import io.vertx.core.http.impl.MimeMapping
-import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.Router
+import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.BodyHandler
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 
 private inline fun <T> ConfigRetriever.use(f: (ConfigRetriever) -> T): T {
     try {
@@ -17,6 +24,15 @@ private inline fun <T> ConfigRetriever.use(f: (ConfigRetriever) -> T): T {
         close()
     }
 }
+
+private inline fun CoroutineScope.coroutine(ctx: RoutingContext, crossinline fn: suspend () -> Unit): Job =
+    launch {
+        try {
+            fn()
+        } catch (e: Exception) {
+            ctx.fail(e)
+        }
+    }
 
 object ConfigKey {
     const val PORT = "http.port"
@@ -35,15 +51,23 @@ class App : CoroutineVerticle() {
         val cfg = ConfigRetriever.create(vertx).use { it.config.await() }.mergeIn(config)
         val port = cfg.getInteger(ConfigKey.PORT)
 
+        val gson = Gson()
+
         server = vertx.createHttpServer()
             .requestHandler(Router.router(vertx).apply {
                 post(Routes.JSON)
                     .handler(BodyHandler.create(false))
                     .handler { ctx ->
-                        val inp = ctx.bodyAsJson
-                        ctx.response()
-                            .putHeader(HttpHeaders.CONTENT_TYPE, MimeMapping.getMimeTypeForExtension("json"))
-                            .end(JsonObject().toBuffer())
+                        coroutine(ctx) {
+                            val gsonObj = withContext(Dispatchers.Default) {
+                                gson.fromJson(ctx.bodyAsString, JsonObject::class.java).also {
+                                    layout(it)
+                                }
+                            }
+                            ctx.response()
+                                .putHeader(HttpHeaders.CONTENT_TYPE, MimeMapping.getMimeTypeForExtension("json"))
+                                .end(gson.toJson(gsonObj))
+                        }
                     }
             })
             .listen(port, "127.0.0.1")
