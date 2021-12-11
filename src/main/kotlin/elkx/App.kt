@@ -1,7 +1,5 @@
 package elkx
 
-import com.google.gson.Gson
-import com.google.gson.JsonObject
 import io.vertx.config.ConfigRetriever
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.http.HttpServer
@@ -51,8 +49,6 @@ class App : CoroutineVerticle() {
         val cfg = ConfigRetriever.create(vertx).use { it.config.await() }.mergeIn(config)
         val port = cfg.getInteger(ConfigKey.PORT)
 
-        val gson = Gson()
-
         server = vertx.createHttpServer()
             .requestHandler(Router.router(vertx).apply {
                 post(Routes.JSON)
@@ -60,13 +56,11 @@ class App : CoroutineVerticle() {
                     .handler { ctx ->
                         coroutine(ctx) {
                             val gsonObj = withContext(Dispatchers.Default) {
-                                gson.fromJson(ctx.bodyAsString, JsonObject::class.java).also {
-                                    layout(it)
-                                }
+                                gsonParse(ctx.bodyAsString).also(::layout)
                             }
                             ctx.response()
                                 .putHeader(HttpHeaders.CONTENT_TYPE, MimeMapping.getMimeTypeForExtension("json"))
-                                .end(gson.toJson(gsonObj))
+                                .end(gsonStringify(gsonObj))
                         }
                     }
             })
