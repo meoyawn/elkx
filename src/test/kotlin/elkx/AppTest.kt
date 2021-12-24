@@ -5,6 +5,7 @@ import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.WebClient
+import io.vertx.ext.web.client.WebClientOptions
 import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.runBlocking
 import org.junit.jupiter.api.AfterAll
@@ -21,22 +22,24 @@ class AppTest {
 
         val deployment = vertx.deployVerticle(
             App(),
-            DeploymentOptions().setConfig(JsonObject(mapOf(ConfigKey.PORT to port))),
+            DeploymentOptions()
+                .setConfig(JsonObject(mapOf(ConfigKey.PORT to port))),
         )!!
 
-        val client = WebClient.create(vertx)!!
+        val client = WebClient.create(
+            vertx,
+            WebClientOptions()
+                .setDefaultHost("localhost")
+                .setDefaultPort(port),
+        )!!
 
         @JvmStatic
         @BeforeAll
-        fun setUp(): Unit = runBlocking {
-            deployment.await()
-        }
+        fun setUp(): Unit = runBlocking { deployment.await() }
 
         @JvmStatic
         @AfterAll
-        fun tearDown(): Unit = runBlocking {
-            vertx.undeploy(deployment.await()).await()
-        }
+        fun tearDown(): Unit = runBlocking { vertx.undeploy(deployment.await()).await() }
     }
 
     @Test
@@ -57,7 +60,7 @@ class AppTest {
 }
 """
         val req = Req(gsonParse(resTxt(name = "serverless.json")), gsonParse(opts))
-        val r = client.post(port, "localhost", Routes.JSON)
+        val r = client.post(Routes.JSON)
             .sendBuffer(Buffer.buffer(gsonStringify(req)))
             .await()
         assertEquals(expected = 200, actual = r.statusCode())
