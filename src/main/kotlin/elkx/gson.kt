@@ -1,12 +1,14 @@
 package elkx
 
 import com.google.gson.Gson
-import com.google.gson.JsonObject
 
-private val gson = Gson()
+/**
+ * ELK uses GSON
+ */
+val gson = Gson()
 
-fun gsonParse(s: String): JsonObject =
-    gson.fromJson(s, JsonObject::class.java)
+inline fun <reified T> gsonParse(s: String): T =
+    gson.fromJson(s, T::class.java)
 
-fun gsonStringify(x: JsonObject): String =
+fun <T> gsonStringify(x: T): String =
     gson.toJson(x)

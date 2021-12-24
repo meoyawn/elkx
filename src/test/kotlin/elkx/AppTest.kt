@@ -6,16 +6,10 @@ import io.vertx.core.buffer.Buffer
 import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.WebClient
 import io.vertx.kotlin.coroutines.await
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.runBlocking
-import kotlinx.coroutines.withContext
-import org.eclipse.elk.graph.json.JsonImporter
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
-import java.nio.file.NoSuchFileException
-import java.nio.file.Paths
-import kotlin.io.path.readText
 import kotlin.test.assertEquals
 
 class AppTest {
@@ -43,25 +37,36 @@ class AppTest {
         fun tearDown(): Unit = runBlocking {
             vertx.undeploy(deployment.await()).await()
         }
-
-        suspend fun resourceText(name: String): String =
-            withContext(Dispatchers.IO) {
-                val res = javaClass.classLoader.getResource(name) ?: throw NoSuchFileException(name)
-                Paths.get(res.toURI()).readText()
-            }
     }
 
     @Test
     fun realExample(): Unit = runBlocking {
+        val opts = """
+{
+  "org.eclipse.elk.edgeRouting": "POLYLINE",
+  "org.eclipse.elk.direction": "RIGHT",
+  "org.eclipse.elk.edgeLabels.inline": "true",
+  "org.eclipse.elk.layered.nodePlacement.strategy": "BRANDES_KOEPF",
+  "org.eclipse.elk.layered.cycleBreaking.strategy": "GREEDY",
+  "org.eclipse.elk.layered.layering.strategy": "NETWORK_SIMPLEX",
+  "org.eclipse.elk.layered.crossingMinimization.strategy": "LAYER_SWEEP",
+  "org.eclipse.elk.spacing.labelLabel": "18",
+  "org.eclipse.elk.layered.interactiveReferencePoint": "TOP_LEFT",
+  "org.eclipse.elk.layered.unnecessaryBendpoints": "false",
+  "org.eclipse.elk.hierarchyHandling": "INCLUDE_CHILDREN"
+}
+"""
+        val req = Req(gsonParse(resTxt(name = "serverless.json")), gsonParse(opts))
         val r = client.post(port, "localhost", Routes.JSON)
-            .sendBuffer(Buffer.buffer(resourceText("serverless.json")))
+            .sendBuffer(Buffer.buffer(gsonStringify(req)))
             .await()
         assertEquals(expected = 200, actual = r.statusCode())
 
-        val root = JsonImporter().transform(gsonParse(r.bodyAsString()))
+        val str = r.bodyAsString()
+        val root = toNode(gsonParse(str))
         assertEquals(expected = 339.0, actual = root.height)
 
         val firstChild = root.children.first()
-        assertEquals(expected = 5.0, actual = firstChild.y)
+        assertEquals(expected = 12.0, actual = firstChild.y)
     }
 }
