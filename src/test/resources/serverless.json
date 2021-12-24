@@ -1,0 +1,214 @@
+{
+  "id": "root",
+  "labels": [],
+  "children": [
+    {
+      "id": "nkvtgps7q2p",
+      "labels": [
+        {
+          "id": "lbl_nkvtgps7q2p",
+          "text": "<h4 id=\"podcast-hosting-service\">Podcast Hosting Service</h4>\n<p><em>Software System</em></p>\n",
+          "width": 185.34375,
+          "height": 60,
+          "layoutOptions": {
+            "org.eclipse.elk.nodeLabels.placement": "INSIDE H_CENTER V_TOP"
+          }
+        }
+      ],
+      "children": [
+        {
+          "id": "nkvtgqi34aqn",
+          "labels": [
+            {
+              "id": "lbl_nkvtgqi34aqn",
+              "text": "<p>Backend</p>\n",
+              "width": 62.71875,
+              "height": 28,
+              "layoutOptions": {
+                "org.eclipse.elk.nodeLabels.placement": "OUTSIDE H_CENTER V_BOTTOM"
+              }
+            }
+          ],
+          "layoutOptions": {
+            "org.eclipse.elk.nodeSize.constraints": "PORTS NODE_LABELS MINIMUM_SIZE",
+            "org.eclipse.elk.nodeSize.minimum": "36, 36",
+            "org.eclipse.elk.nodeSize.options": "ASYMMETRICAL OUTSIDE_NODE_LABELS_OVERHANG"
+          },
+          "width": 36,
+          "height": 36
+        },
+        {
+          "id": "nkvtgql8vjc",
+          "labels": [
+            {
+              "id": "lbl_nkvtgql8vjc",
+              "text": "<p>Edge Function</p>\n",
+              "width": 104.1875,
+              "height": 28,
+              "layoutOptions": {
+                "org.eclipse.elk.nodeLabels.placement": "OUTSIDE H_CENTER V_BOTTOM"
+              }
+            }
+          ],
+          "layoutOptions": {
+            "org.eclipse.elk.nodeSize.constraints": "PORTS NODE_LABELS MINIMUM_SIZE",
+            "org.eclipse.elk.nodeSize.minimum": "36, 36",
+            "org.eclipse.elk.nodeSize.options": "ASYMMETRICAL OUTSIDE_NODE_LABELS_OVERHANG"
+          },
+          "width": 36,
+          "height": 36
+        },
+        {
+          "id": "nkvtgqqpt7kr",
+          "labels": [
+            {
+              "id": "lbl_nkvtgqqpt7kr",
+              "text": "<h4 id=\"media\">Media</h4>\n<p><em>S3</em></p>\n",
+              "width": 46.0625,
+              "height": 60,
+              "layoutOptions": {
+                "org.eclipse.elk.nodeLabels.placement": "OUTSIDE H_CENTER V_BOTTOM"
+              }
+            }
+          ],
+          "layoutOptions": {
+            "org.eclipse.elk.nodeSize.constraints": "PORTS NODE_LABELS MINIMUM_SIZE",
+            "org.eclipse.elk.nodeSize.minimum": "36, 36",
+            "org.eclipse.elk.nodeSize.options": "ASYMMETRICAL OUTSIDE_NODE_LABELS_OVERHANG"
+          },
+          "width": 36,
+          "height": 36
+        },
+        {
+          "id": "nkvtgtt4hmw9",
+          "labels": [
+            {
+              "id": "lbl_nkvtgtt4hmw9",
+              "text": "<p>DB</p>\n",
+              "width": 21.515625,
+              "height": 28,
+              "layoutOptions": {
+                "org.eclipse.elk.nodeLabels.placement": "OUTSIDE H_CENTER V_BOTTOM"
+              }
+            }
+          ],
+          "layoutOptions": {
+            "org.eclipse.elk.nodeSize.constraints": "PORTS NODE_LABELS MINIMUM_SIZE",
+            "org.eclipse.elk.nodeSize.minimum": "36, 36",
+            "org.eclipse.elk.nodeSize.options": "ASYMMETRICAL OUTSIDE_NODE_LABELS_OVERHANG"
+          },
+          "width": 36,
+          "height": 36
+        }
+      ],
+      "edges": [
+        {
+          "id": "ekvtgqpetmri",
+          "labels": [],
+          "sources": [
+            "nkvtgql8vjc"
+          ],
+          "targets": [
+            "nkvtgqi34aqn"
+          ]
+        },
+        {
+          "id": "ekvtgr89olhm",
+          "labels": [],
+          "sources": [
+            "nkvtgql8vjc"
+          ],
+          "targets": [
+            "nkvtgqqpt7kr"
+          ]
+        },
+        {
+          "id": "ekvtgu0w3nvo",
+          "labels": [],
+          "sources": [
+            "nkvtgqi34aqn"
+          ],
+          "targets": [
+            "nkvtgtt4hmw9"
+          ]
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.nodeSize.constraints": "PORTS NODE_LABELS MINIMUM_SIZE",
+        "org.eclipse.elk.nodeSize.minimum": "36, 36",
+        "org.eclipse.elk.nodeSize.options": "ASYMMETRICAL OUTSIDE_NODE_LABELS_OVERHANG"
+      },
+      "width": 277.80625,
+      "height": 315
+    },
+    {
+      "id": "nkvtgq4zm2l",
+      "labels": [
+        {
+          "id": "lbl_nkvtgq4zm2l",
+          "text": "<p>Podcast App</p>\n",
+          "width": 92.46875,
+          "height": 28,
+          "layoutOptions": {
+            "org.eclipse.elk.nodeLabels.placement": "OUTSIDE H_CENTER V_BOTTOM"
+          }
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.nodeSize.constraints": "PORTS NODE_LABELS MINIMUM_SIZE",
+        "org.eclipse.elk.nodeSize.minimum": "36, 36",
+        "org.eclipse.elk.nodeSize.options": "ASYMMETRICAL OUTSIDE_NODE_LABELS_OVERHANG"
+      },
+      "width": 36,
+      "height": 36
+    },
+    {
+      "id": "nkvtgt3f3gtm",
+      "labels": [
+        {
+          "id": "lbl_nkvtgt3f3gtm",
+          "text": "<p>Listener</p>\n",
+          "width": 58.234375,
+          "height": 28,
+          "layoutOptions": {
+            "org.eclipse.elk.nodeLabels.placement": "OUTSIDE H_CENTER V_BOTTOM"
+          }
+        }
+      ],
+      "layoutOptions": {
+        "org.eclipse.elk.nodeSize.constraints": "PORTS NODE_LABELS MINIMUM_SIZE",
+        "org.eclipse.elk.nodeSize.minimum": "36, 36",
+        "org.eclipse.elk.nodeSize.options": "ASYMMETRICAL OUTSIDE_NODE_LABELS_OVERHANG"
+      },
+      "width": 36,
+      "height": 36
+    }
+  ],
+  "edges": [
+    {
+      "id": "ekvtgr9n6p6i",
+      "labels": [],
+      "sources": [
+        "nkvtgq4zm2l"
+      ],
+      "targets": [
+        "nkvtgql8vjc"
+      ]
+    },
+    {
+      "id": "ekvtgt3f3uan",
+      "labels": [],
+      "sources": [
+        "nkvtgt3f3gtm"
+      ],
+      "targets": [
+        "nkvtgq4zm2l"
+      ]
+    }
+  ],
+  "layoutOptions": {
+    "org.eclipse.elk.nodeSize.constraints": "PORTS NODE_LABELS MINIMUM_SIZE",
+    "org.eclipse.elk.nodeSize.minimum": "36, 36",
+    "org.eclipse.elk.nodeSize.options": "ASYMMETRICAL OUTSIDE_NODE_LABELS_OVERHANG"
+  }
+}
