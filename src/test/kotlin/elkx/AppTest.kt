@@ -21,7 +21,7 @@ class AppTest {
 
         val port = (9000..10000).random()
 
-        val deploy = vertx.deployVerticle(
+        val deployment = vertx.deployVerticle(
             App(),
             DeploymentOptions().setConfig(JsonObject(mapOf(ConfigKey.PORT to port))),
         )!!
@@ -31,13 +31,13 @@ class AppTest {
         @JvmStatic
         @BeforeAll
         fun setUp(): Unit = runBlocking {
-            deploy.await()
+            deployment.await()
         }
 
         @JvmStatic
         @AfterAll
         fun tearDown(): Unit = runBlocking {
-            vertx.undeploy(deploy.await()).await()
+            vertx.undeploy(deployment.await()).await()
         }
     }
 
