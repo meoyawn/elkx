@@ -44,21 +44,25 @@ class AppTest {
 
     @Test
     fun `no req body`(): Unit = runBlocking {
-        val r = client.post(Routes.JSON).send().await()
-        assertEquals(expected = 400, actual = r.statusCode())
+        val resp = client.post(Routes.JSON).send().await()
+        assertEquals(expected = 400, actual = resp.statusCode())
     }
 
     @Test
     fun `not json`(): Unit = runBlocking {
-        val r = client.post(Routes.JSON).sendBuffer(Buffer.buffer("foo")).await()
-        assertEquals(expected = 400, actual = r.statusCode())
+        val resp = client.post(Routes.JSON).sendBuffer(Buffer.buffer("foo")).await()
+        assertEquals(expected = 400, actual = resp.statusCode())
     }
 
     @Test
     fun `empty json`(): Unit = runBlocking {
-        val empty = Req(com.google.gson.JsonObject(), com.google.gson.JsonObject())
-        val r = client.post(Routes.JSON).sendGson(empty).await()
-        assertEquals(expected = 400, actual = r.statusCode())
+        val resp = client.post(Routes.JSON).sendGson(
+            LayoutBody(
+                root = com.google.gson.JsonObject(),
+                opts = com.google.gson.JsonObject(),
+            )
+        ).await()
+        assertEquals(expected = 400, actual = resp.statusCode())
     }
 
     @Test
@@ -78,11 +82,11 @@ class AppTest {
   "org.eclipse.elk.hierarchyHandling": "INCLUDE_CHILDREN"
 }
 """
-        val req = Req(gsonParse(resTxt(name = "serverless.json")), gsonParse(opts))
-        val r = client.post(Routes.JSON).sendGson(req).await()
-        assertEquals(expected = 200, actual = r.statusCode())
+        val body = LayoutBody(gsonParse(resTxt(name = "serverless.json")), gsonParse(opts))
+        val resp = client.post(Routes.JSON).sendGson(body).await()
+        assertEquals(expected = 200, actual = resp.statusCode())
 
-        val str = r.bodyAsString()
+        val str = resp.bodyAsString()
         val root = toNode(gsonParse(str))
         assertEquals(expected = 339.0, actual = root.height)
 

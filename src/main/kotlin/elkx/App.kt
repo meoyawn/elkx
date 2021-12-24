@@ -33,28 +33,28 @@ object Routes {
     const val JSON = "/json"
 }
 
-data class Req(
+data class LayoutBody(
     val root: JsonObject,
     val opts: JsonObject,
 )
 
-private fun layout(ctx: RoutingContext): Future<Void> {
+private fun layoutEndpoint(ctx: RoutingContext): Future<Void> {
 
     val bodyStr = ctx.bodyAsString ?: return ctx.response().setStatusCode(400).end()
 
-    val req = try {
-        gsonParse<Req>(bodyStr)
+    val layoutBody = try {
+        gsonParse<LayoutBody>(bodyStr)
     } catch (e: JsonSyntaxException) {
         return ctx.response().setStatusCode(400).end()
     }
 
     try {
-        layout(req.root, req.opts)
+        layoutEndpoint(layoutBody.root, layoutBody.opts)
     } catch (e: JsonImportException) {
         return ctx.response().setStatusCode(400).end()
     }
 
-    val resp = gsonStringify(req.root)
+    val resp = gsonStringify(layoutBody.root)
 
     return ctx.response()
         .putHeader(HttpHeaders.CONTENT_TYPE, MimeMapping.getMimeTypeForExtension("json"))
@@ -88,7 +88,7 @@ class App : CoroutineVerticle() {
                     .handler(BodyHandler.create(false))
                     .coroutineHandler { ctx ->
                         withContext(Dispatchers.Default) {
-                            layout(ctx)
+                            layoutEndpoint(ctx)
                         }
                     }
             })
