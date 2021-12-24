@@ -1,7 +1,9 @@
 package elkx
 
 import com.google.gson.JsonObject
+import com.google.gson.JsonSyntaxException
 import io.vertx.config.ConfigRetriever
+import io.vertx.core.Future
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.http.HttpServer
 import io.vertx.core.http.impl.MimeMapping
@@ -14,6 +16,7 @@ import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import org.eclipse.elk.graph.json.JsonImportException
 
 private inline fun <T> ConfigRetriever.use(f: (ConfigRetriever) -> T): T =
     try {
@@ -34,6 +37,29 @@ data class Req(
     val root: JsonObject,
     val opts: JsonObject,
 )
+
+private fun layout(ctx: RoutingContext): Future<Void> {
+
+    val bodyStr = ctx.bodyAsString ?: return ctx.response().setStatusCode(400).end()
+
+    val req = try {
+        gsonParse<Req>(bodyStr)
+    } catch (e: JsonSyntaxException) {
+        return ctx.response().setStatusCode(400).end()
+    }
+
+    try {
+        layout(req.root, req.opts)
+    } catch (e: JsonImportException) {
+        return ctx.response().setStatusCode(400).end()
+    }
+
+    val resp = gsonStringify(req.root)
+
+    return ctx.response()
+        .putHeader(HttpHeaders.CONTENT_TYPE, MimeMapping.getMimeTypeForExtension("json"))
+        .end(resp)
+}
 
 class App : CoroutineVerticle() {
 
@@ -61,14 +87,9 @@ class App : CoroutineVerticle() {
                 post(Routes.JSON)
                     .handler(BodyHandler.create(false))
                     .coroutineHandler { ctx ->
-                        val resp = withContext(Dispatchers.Default) {
-                            val req = gsonParse<Req>(ctx.bodyAsString)
-                            layout(req.root, req.opts)
-                            gsonStringify(req.root)
+                        withContext(Dispatchers.Default) {
+                            layout(ctx)
                         }
-                        ctx.response()
-                            .putHeader(HttpHeaders.CONTENT_TYPE, MimeMapping.getMimeTypeForExtension("json"))
-                            .end(resp)
                     }
             })
             .listen(port, "127.0.0.1")

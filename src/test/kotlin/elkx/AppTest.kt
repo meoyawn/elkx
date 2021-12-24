@@ -43,6 +43,25 @@ class AppTest {
     }
 
     @Test
+    fun `no req body`(): Unit = runBlocking {
+        val r = client.post(Routes.JSON).send().await()
+        assertEquals(expected = 400, actual = r.statusCode())
+    }
+
+    @Test
+    fun `not json`(): Unit = runBlocking {
+        val r = client.post(Routes.JSON).sendBuffer(Buffer.buffer("foo")).await()
+        assertEquals(expected = 400, actual = r.statusCode())
+    }
+
+    @Test
+    fun `empty json`(): Unit = runBlocking {
+        val empty = Req(com.google.gson.JsonObject(), com.google.gson.JsonObject())
+        val r = client.post(Routes.JSON).sendGson(empty).await()
+        assertEquals(expected = 400, actual = r.statusCode())
+    }
+
+    @Test
     fun realExample(): Unit = runBlocking {
         val opts = """
 {
@@ -60,9 +79,7 @@ class AppTest {
 }
 """
         val req = Req(gsonParse(resTxt(name = "serverless.json")), gsonParse(opts))
-        val r = client.post(Routes.JSON)
-            .sendBuffer(Buffer.buffer(gsonStringify(req)))
-            .await()
+        val r = client.post(Routes.JSON).sendGson(req).await()
         assertEquals(expected = 200, actual = r.statusCode())
 
         val str = r.bodyAsString()
