@@ -7,12 +7,16 @@ import io.vertx.core.json.JsonObject
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
 import io.vertx.kotlin.coroutines.await
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import org.eclipse.elk.graph.json.JsonImporter
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
+import kotlin.test.assertTrue
 
 class AppTest {
 
@@ -67,23 +71,8 @@ class AppTest {
     }
 
     @Test
-    fun realExample(): Unit = runBlocking {
-        val opts = """
-{
-  "org.eclipse.elk.edgeRouting": "POLYLINE",
-  "org.eclipse.elk.direction": "RIGHT",
-  "org.eclipse.elk.edgeLabels.inline": "true",
-  "org.eclipse.elk.layered.nodePlacement.strategy": "BRANDES_KOEPF",
-  "org.eclipse.elk.layered.cycleBreaking.strategy": "GREEDY",
-  "org.eclipse.elk.layered.layering.strategy": "NETWORK_SIMPLEX",
-  "org.eclipse.elk.layered.crossingMinimization.strategy": "LAYER_SWEEP",
-  "org.eclipse.elk.spacing.labelLabel": "18",
-  "org.eclipse.elk.layered.interactiveReferencePoint": "TOP_LEFT",
-  "org.eclipse.elk.layered.unnecessaryBendpoints": "false",
-  "org.eclipse.elk.hierarchyHandling": "INCLUDE_CHILDREN"
-}
-"""
-        val body = LayoutBody(gsonParse(resTxt(name = "serverless.json")), gsonParse(opts))
+    fun `layout values`(): Unit = runBlocking {
+        val body = LayoutBody(gsonParse(resTxt("serverless.json")), gsonParse(resTxt("opts.json")))
         val resp = client.post(Routes.JSON).sendGson(body).await()
         assertEquals(expected = 200, actual = resp.statusCode())
 
@@ -93,5 +82,20 @@ class AppTest {
 
         val firstChild = root.children.first()
         assertEquals(expected = 12.0, actual = firstChild.y)
+    }
+
+    @Test
+    fun concurrency(): Unit = runBlocking {
+        val opts = gsonParse<com.google.gson.JsonObject>(resTxt("opts.json"))
+        val bodies = listOf("analysis.json", "ptolemy.json", "serverless.json")
+            .map { LayoutBody(gsonParse(resTxt(it)), opts) }
+
+        val codes = (1..100).map {
+            async(Dispatchers.Default) {
+                client.post(Routes.JSON).sendGson(bodies.random()).await().statusCode()
+            }
+        }.awaitAll()
+
+        assertTrue(codes.all { it == 200 })
     }
 }

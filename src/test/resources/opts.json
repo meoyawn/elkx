@@ -1,0 +1,13 @@
+{
+  "org.eclipse.elk.edgeRouting": "POLYLINE",
+  "org.eclipse.elk.direction": "RIGHT",
+  "org.eclipse.elk.edgeLabels.inline": "true",
+  "org.eclipse.elk.layered.nodePlacement.strategy": "BRANDES_KOEPF",
+  "org.eclipse.elk.layered.cycleBreaking.strategy": "GREEDY",
+  "org.eclipse.elk.layered.layering.strategy": "NETWORK_SIMPLEX",
+  "org.eclipse.elk.layered.crossingMinimization.strategy": "LAYER_SWEEP",
+  "org.eclipse.elk.spacing.labelLabel": "18",
+  "org.eclipse.elk.layered.interactiveReferencePoint": "TOP_LEFT",
+  "org.eclipse.elk.layered.unnecessaryBendpoints": "false",
+  "org.eclipse.elk.hierarchyHandling": "INCLUDE_CHILDREN"
+}
