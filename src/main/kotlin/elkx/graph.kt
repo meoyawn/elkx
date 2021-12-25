@@ -15,18 +15,12 @@ import org.eclipse.elk.graph.ElkNode
 import org.eclipse.elk.graph.ElkPort
 import org.eclipse.elk.graph.json.JsonImporter
 
-private val imp = JsonImporter()
 private val eng = RecursiveGraphLayoutEngine()
 
 private val SERVICE = LayoutMetaDataService.getInstance().apply {
     registerLayoutMetaDataProviders(CoreOptions())
     registerLayoutMetaDataProviders(LayeredMetaDataProvider())
 }
-
-private val bpm = BasicProgressMonitor()
-
-fun toNode(json: JsonObject): ElkNode =
-    imp.transform(json)
 
 private fun optsToCfg(opts: JsonObject): LayoutConfigurator {
     val lc = LayoutConfigurator()
@@ -54,8 +48,9 @@ private fun optsToCfg(opts: JsonObject): LayoutConfigurator {
 }
 
 fun layout(rootJson: JsonObject, opts: JsonObject) {
-    val rootNode = toNode(rootJson)
+    val imp = JsonImporter()
+    val rootNode = imp.transform(rootJson)
     ElkUtil.applyVisitors(rootNode, optsToCfg(opts))
-    eng.layout(rootNode, bpm)
+    eng.layout(rootNode, BasicProgressMonitor())
     imp.transferLayout(rootNode)
 }

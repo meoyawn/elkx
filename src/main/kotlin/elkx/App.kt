@@ -47,12 +47,14 @@ private fun layoutEndpoint(ctx: RoutingContext): Future<Void> {
     val layoutBody = try {
         gsonParse<LayoutBody>(bodyStr)
     } catch (e: JsonSyntaxException) {
+        e.printStackTrace()
         return ctx.response().setStatusCode(400).end()
     }
 
     try {
         layout(layoutBody.root, layoutBody.opts)
     } catch (e: JsonImportException) {
+        e.printStackTrace()
         return ctx.response().setStatusCode(400).end()
     }
 
@@ -71,6 +73,7 @@ class App : CoroutineVerticle() {
                 try {
                     fn(ctx)
                 } catch (e: Exception) {
+                    e.printStackTrace()
                     ctx.fail(e)
                 }
             }

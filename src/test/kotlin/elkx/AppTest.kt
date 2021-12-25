@@ -8,6 +8,7 @@ import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
 import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.runBlocking
+import org.eclipse.elk.graph.json.JsonImporter
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
@@ -87,7 +88,7 @@ class AppTest {
         assertEquals(expected = 200, actual = resp.statusCode())
 
         val str = resp.bodyAsString()
-        val root = toNode(gsonParse(str))
+        val root = JsonImporter().transform(gsonParse<com.google.gson.JsonObject>(str))
         assertEquals(expected = 339.0, actual = root.height)
 
         val firstChild = root.children.first()
