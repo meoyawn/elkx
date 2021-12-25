@@ -11,6 +11,8 @@ import io.vertx.ext.web.Route
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.BodyHandler
+import io.vertx.ext.web.handler.LoggerFormat
+import io.vertx.ext.web.handler.LoggerHandler
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.Dispatchers
@@ -82,6 +84,7 @@ class App : CoroutineVerticle() {
         server = vertx.createHttpServer()
             .requestHandler(Router.router(vertx).apply {
                 post(Routes.JSON)
+                    .handler(LoggerHandler.create(LoggerFormat.TINY))
                     .handler(BodyHandler.create(false))
                     .coroutineHandler { ctx ->
                         withContext(Dispatchers.Default) {
