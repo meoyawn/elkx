@@ -49,23 +49,21 @@ private fun layoutEndpoint(ctx: RoutingContext): Future<Void> {
     }
 
     try {
-        layoutEndpoint(layoutBody.root, layoutBody.opts)
+        layout(layoutBody.root, layoutBody.opts)
     } catch (e: JsonImportException) {
         return ctx.response().setStatusCode(400).end()
     }
 
-    val resp = gsonStringify(layoutBody.root)
-
     return ctx.response()
         .putHeader(HttpHeaders.CONTENT_TYPE, MimeMapping.getMimeTypeForExtension("json"))
-        .end(resp)
+        .end(gsonStringify(layoutBody.root))
 }
 
 class App : CoroutineVerticle() {
 
     private lateinit var server: HttpServer
 
-    private fun Route.coroutineHandler(fn: suspend (RoutingContext) -> Unit) {
+    private fun Route.coroutineHandler(fn: suspend (RoutingContext) -> Unit): Route =
         handler { ctx ->
             launch {
                 try {
@@ -75,7 +73,6 @@ class App : CoroutineVerticle() {
                 }
             }
         }
-    }
 
     override suspend fun start() {
 

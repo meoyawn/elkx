@@ -53,7 +53,7 @@ private fun optsToCfg(opts: JsonObject): LayoutConfigurator {
     return lc
 }
 
-fun layoutEndpoint(rootJson: JsonObject, opts: JsonObject) {
+fun layout(rootJson: JsonObject, opts: JsonObject) {
     val rootNode = toNode(rootJson)
     ElkUtil.applyVisitors(rootNode, optsToCfg(opts))
     eng.layout(rootNode, bpm)
