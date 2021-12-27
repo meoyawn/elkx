@@ -2,7 +2,6 @@ package elkx
 
 import com.google.gson.JsonObject
 import com.google.gson.JsonSyntaxException
-import io.vertx.config.ConfigRetriever
 import io.vertx.core.Future
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.http.HttpServer
@@ -20,15 +19,8 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.eclipse.elk.graph.json.JsonImportException
 
-private inline fun <T> ConfigRetriever.use(f: (ConfigRetriever) -> T): T =
-    try {
-        f(this)
-    } finally {
-        close()
-    }
-
 object ConfigKey {
-    const val PORT = "http.port"
+    const val PORT = "PORT"
 }
 
 object Routes {
@@ -81,8 +73,10 @@ class App : CoroutineVerticle() {
 
     override suspend fun start() {
 
-        val cfg = ConfigRetriever.create(vertx).use { it.config.await() }.mergeIn(config)
-        val port = cfg.getInteger(ConfigKey.PORT)
+        val host = "127.0.0.1"
+        val port = config.getInteger(ConfigKey.PORT)
+            ?: System.getenv(ConfigKey.PORT)?.toIntOrNull()
+            ?: 8080
 
         server = vertx.createHttpServer()
             .requestHandler(Router.router(vertx).apply {
@@ -96,8 +90,10 @@ class App : CoroutineVerticle() {
                         }
                     }
             })
-            .listen(port, "127.0.0.1")
+            .listen(port, host)
             .await()
+
+        println("http://$host:$port")
     }
 
     override suspend fun stop() {
