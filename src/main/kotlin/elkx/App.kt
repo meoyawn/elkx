@@ -86,8 +86,9 @@ class App : CoroutineVerticle() {
 
         server = vertx.createHttpServer()
             .requestHandler(Router.router(vertx).apply {
+                route().handler(LoggerHandler.create(LoggerFormat.TINY))
+
                 post(Routes.JSON)
-                    .handler(LoggerHandler.create(LoggerFormat.TINY))
                     .handler(BodyHandler.create(false))
                     .coroutineHandler { ctx ->
                         withContext(Dispatchers.Default) {
