@@ -42,6 +42,8 @@ dependencies {
 
         "io.vertx:vertx-web-client",
     )
+
+    testImplementation 'io.netty:netty-resolver-dns-native-macos:4.1.72.Final:osx-x86_64'
 }
 
 vertx {
