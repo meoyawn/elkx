@@ -1,0 +1,16 @@
+syntax = "proto3";
+
+package elkx;
+
+message LayoutReq {
+    string root = 1;
+    string opts = 2;
+}
+
+message LayoutResp {
+    string root = 1;
+}
+
+service ElkX {
+    rpc Layout(LayoutReq) returns (LayoutResp);
+}
