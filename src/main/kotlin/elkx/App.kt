@@ -15,6 +15,7 @@ import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.eclipse.elk.graph.json.JsonImportException
 import kotlin.coroutines.CoroutineContext
@@ -58,11 +59,11 @@ private fun CoroutineScope.coroutine(
     req: RoutingContext,
     thread: CoroutineContext = this.coroutineContext,
     work: suspend (req: RoutingContext) -> Unit,
-) =
+): Job =
     launch(thread) {
         try {
             work(req)
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             req.fail(e)
         }
     }

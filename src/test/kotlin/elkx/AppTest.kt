@@ -4,6 +4,8 @@ import com.google.gson.JsonObject
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
+import io.vertx.core.http.HttpHeaders
+import io.vertx.core.http.impl.MimeMapping
 import io.vertx.ext.web.client.HttpResponse
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
@@ -33,10 +35,11 @@ class AppTest {
                 .setDefaultPort(port),
         )!!
 
-        suspend fun layoutRPC(b: LayoutBody): HttpResponse<String> =
+        suspend fun layoutRPC(b: LayoutBody): HttpResponse<JsonObject> =
             client.post(Routes.JSON)
-                .`as`(BodyCodec.string())
-                .sendGson(b)
+                .`as`(BodyCodec.create { gsonParse<JsonObject>(it.toString()) })
+                .putHeader(HttpHeaders.CONTENT_TYPE.toString(), MimeMapping.getMimeTypeForExtension("json"))
+                .sendBuffer(Buffer.buffer(gsonStringify(b)))
                 .await()
 
         @JvmStatic
@@ -78,7 +81,7 @@ class AppTest {
             layoutRPC(LayoutBody(root = gsonParse(resTxt("serverless.json")), opts = gsonParse(resTxt("opts.json"))))
         assertEquals(expected = 200, actual = r.statusCode())
 
-        val root = JsonImporter().transform(gsonParse<JsonObject>(r.body()))
+        val root = JsonImporter().transform(r.body())
         assertEquals(expected = 339.0, actual = root.height)
 
         val firstChild = root.children.first()
