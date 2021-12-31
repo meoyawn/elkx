@@ -13,12 +13,9 @@ import io.vertx.ext.web.handler.LoggerFormat
 import io.vertx.ext.web.handler.LoggerHandler
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 import org.eclipse.elk.graph.json.JsonImportException
-import kotlin.coroutines.CoroutineContext
 
 object ConfigKey {
     const val PORT = "PORT"
@@ -45,29 +42,6 @@ private fun layoutSync(ctx: RoutingContext): Future<Void> {
         .end(gsonStringify(reqBody.root))
 }
 
-private fun maybe400(ctx: RoutingContext) {
-    when (ctx.failure()) {
-        is JsonSyntaxException, is JsonImportException ->
-            ctx.response().setStatusCode(400).end()
-
-        else ->
-            ctx.next()
-    }
-}
-
-private fun CoroutineScope.coroutine(
-    req: RoutingContext,
-    thread: CoroutineContext = this.coroutineContext,
-    work: suspend (req: RoutingContext) -> Unit,
-): Job =
-    launch(thread) {
-        try {
-            work(req)
-        } catch (e: Throwable) {
-            req.fail(e)
-        }
-    }
-
 class App : CoroutineVerticle() {
 
     private lateinit var server: HttpServer
@@ -85,8 +59,23 @@ class App : CoroutineVerticle() {
 
             post(Routes.JSON)
                 .handler(BodyHandler.create(false))
-                .handler { coroutine(it, Dispatchers.Default, ::layoutSync) }
-                .failureHandler(::maybe400)
+                .handler { ctx ->
+                    launch(Dispatchers.Default) {
+                        try {
+                            layoutSync(ctx)
+                        } catch (e: Throwable) {
+                            ctx.fail(e)
+                        }
+                    }
+                }
+                .failureHandler { ctx ->
+                    when (ctx.failure()) {
+                        is JsonSyntaxException, is JsonImportException ->
+                            ctx.response().setStatusCode(400).end()
+                        else ->
+                            ctx.next()
+                    }
+                }
         }
 
         server = vertx.createHttpServer()
