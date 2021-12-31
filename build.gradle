@@ -3,7 +3,6 @@ plugins {
     id 'org.jetbrains.kotlin.jvm' version '1.6.10'
     id "application"
     id "com.github.johnrengelman.shadow" version "7.1.2"
-    id "dev.jacomet.logging-capabilities" version "0.10.0"
     id "com.github.ben-manes.versions" version "0.39.0"
 }
 
@@ -18,19 +17,11 @@ repositories {
     mavenCentral()
 }
 
-loggingCapabilities {
-    enforceLogback()
-}
-
 dependencies {
-    implementation "org.jetbrains.kotlin:kotlin-stdlib"
-
     implementation(
+        "org.jetbrains.kotlin:kotlin-stdlib",
         "org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0",
-        "org.jetbrains.kotlinx:kotlinx-coroutines-jdk8:1.6.0",
     )
-
-    implementation 'ch.qos.logback:logback-classic:1.2.10'
 
     implementation(
         'org.eclipse.elk:org.eclipse.elk.graph.json:0.7.1',
@@ -50,8 +41,6 @@ dependencies {
         'org.junit.jupiter:junit-jupiter-api:5.8.2',
         'org.jetbrains.kotlin:kotlin-test',
     )
-
-    testImplementation 'io.netty:netty-resolver-dns-native-macos:4.1.72.Final:osx-x86_64'
 }
 
 protobuf {
