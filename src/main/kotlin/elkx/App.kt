@@ -44,7 +44,7 @@ private fun layoutSync(ctx: RoutingContext): Future<Void> {
         .end(gsonStringify(reqBody.root))
 }
 
-private fun maybeIts400(ctx: RoutingContext) {
+private fun maybe400(ctx: RoutingContext) {
     when (ctx.failure()) {
         is JsonSyntaxException, is JsonImportException ->
             ctx.response().setStatusCode(400).end()
@@ -84,12 +84,8 @@ class App : CoroutineVerticle() {
 
             post(Routes.JSON)
                 .handler(BodyHandler.create(false))
-                .handler { ctx ->
-                    coroutine(ctx, Dispatchers.Default) {
-                        layoutSync(ctx)
-                    }
-                }
-                .failureHandler(::maybeIts400)
+                .handler { coroutine(it, Dispatchers.Default, ::layoutSync) }
+                .failureHandler(::maybe400)
         }
 
         server = vertx.createHttpServer()
