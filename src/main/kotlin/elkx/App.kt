@@ -21,10 +21,14 @@ fun mkServer(port: Int): Server =
         .addService(ElkService())
         .build()
 
-fun main() {
-    val port = System.getenv("PORT") ?: "8080"
-    val server = mkServer(port.toInt())
-    server.start()
-    println("http://localhost:8080")
-    server.awaitTermination()
+object Main {
+
+    @JvmStatic
+    fun main(args: Array<String>) {
+        val port = System.getenv("PORT") ?: "8080"
+        val server = mkServer(port.toInt())
+        server.start()
+        println("http://localhost:8080")
+        server.awaitTermination()
+    }
 }
