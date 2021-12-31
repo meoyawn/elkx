@@ -35,13 +35,13 @@ class AppTest {
 
         @JvmStatic
         @BeforeAll
-        fun setUp(): Unit = runBlocking {
+        fun setUp() {
             server.start()
         }
 
         @JvmStatic
         @AfterAll
-        fun tearDown(): Unit = runBlocking {
+        fun tearDown() {
             server.shutdownNow()
             channel.shutdownNow()
         }

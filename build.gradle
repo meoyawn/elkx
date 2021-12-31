@@ -33,13 +33,13 @@ dependencies {
     )
 
     implementation(
-        'io.grpc:grpc-netty-shaded:1.43.1',
         'io.grpc:grpc-protobuf:1.43.1',
         'io.grpc:grpc-kotlin-stub:1.2.0',
         'io.grpc:grpc-stub:1.43.1',
         "com.google.protobuf:protobuf-kotlin:3.19.1",
     )
     compileOnly 'org.apache.tomcat:annotations-api:6.0.53'
+    runtimeOnly 'io.grpc:grpc-netty-shaded:1.43.1'
 
     testImplementation(
         'org.junit.jupiter:junit-jupiter-api:5.8.2',
