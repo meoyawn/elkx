@@ -6,7 +6,6 @@ import io.vertx.core.Future
 import io.vertx.core.http.HttpHeaders
 import io.vertx.core.http.HttpServer
 import io.vertx.core.http.impl.MimeMapping
-import io.vertx.ext.web.Route
 import io.vertx.ext.web.Router
 import io.vertx.ext.web.RoutingContext
 import io.vertx.ext.web.handler.BodyHandler
@@ -14,7 +13,6 @@ import io.vertx.ext.web.handler.LoggerFormat
 import io.vertx.ext.web.handler.LoggerHandler
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
-import kotlinx.coroutines.launch
 import org.eclipse.elk.graph.json.JsonImportException
 
 object ConfigKey {
@@ -56,18 +54,6 @@ private fun layoutSync(ctx: RoutingContext): Future<Void> {
 class App : CoroutineVerticle() {
 
     private lateinit var server: HttpServer
-
-    private fun Route.coroutineHandler(fn: suspend (RoutingContext) -> Unit): Route =
-        handler { ctx ->
-            launch {
-                try {
-                    fn(ctx)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                    ctx.fail(e)
-                }
-            }
-        }
 
     override suspend fun start() {
 
