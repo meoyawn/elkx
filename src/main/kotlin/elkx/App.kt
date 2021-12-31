@@ -13,7 +13,11 @@ import io.vertx.ext.web.handler.LoggerFormat
 import io.vertx.ext.web.handler.LoggerHandler
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 import org.eclipse.elk.graph.json.JsonImportException
+import kotlin.coroutines.CoroutineContext
 
 object ConfigKey {
     const val PORT = "PORT"
@@ -32,24 +36,36 @@ private fun layoutSync(ctx: RoutingContext): Future<Void> {
 
     val bodyStr = ctx.bodyAsString ?: return ctx.response().setStatusCode(400).end()
 
-    val layoutBody = try {
-        gsonParse<LayoutBody>(bodyStr)
-    } catch (e: JsonSyntaxException) {
-        e.printStackTrace()
-        return ctx.response().setStatusCode(400).end()
-    }
-
-    try {
-        layout(layoutBody.root, layoutBody.opts)
-    } catch (e: JsonImportException) {
-        e.printStackTrace()
-        return ctx.response().setStatusCode(400).end()
-    }
+    val reqBody = gsonParse<LayoutBody>(bodyStr)
+    layout(reqBody.root, reqBody.opts)
 
     return ctx.response()
         .putHeader(HttpHeaders.CONTENT_TYPE, MimeMapping.getMimeTypeForExtension("json"))
-        .end(gsonStringify(layoutBody.root))
+        .end(gsonStringify(reqBody.root))
 }
+
+private fun maybeIts400(ctx: RoutingContext) {
+    when (ctx.failure()) {
+        is JsonSyntaxException, is JsonImportException ->
+            ctx.response().setStatusCode(400).end()
+
+        else ->
+            ctx.next()
+    }
+}
+
+private fun CoroutineScope.coroutine(
+    req: RoutingContext,
+    thread: CoroutineContext = this.coroutineContext,
+    work: suspend (req: RoutingContext) -> Unit,
+) =
+    launch(thread) {
+        try {
+            work(req)
+        } catch (e: Exception) {
+            req.fail(e)
+        }
+    }
 
 class App : CoroutineVerticle() {
 
@@ -68,7 +84,12 @@ class App : CoroutineVerticle() {
 
             post(Routes.JSON)
                 .handler(BodyHandler.create(false))
-                .handler(::layoutSync)
+                .handler { ctx ->
+                    coroutine(ctx, Dispatchers.Default) {
+                        layoutSync(ctx)
+                    }
+                }
+                .failureHandler(::maybeIts400)
         }
 
         server = vertx.createHttpServer()
