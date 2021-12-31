@@ -18,6 +18,6 @@ suspend fun resTxt(name: String): String =
         Paths.get(res.toURI()).readText()
     }
 
-fun <T> HttpRequest<Buffer>.sendGson(x: T): Future<HttpResponse<Buffer>> =
+fun <T, R> HttpRequest<R>.sendGson(x: T): Future<HttpResponse<R>> =
     putHeader(HttpHeaders.CONTENT_TYPE.toString(), MimeMapping.getMimeTypeForExtension("json"))
         .sendBuffer(Buffer.buffer(gsonStringify(x)))

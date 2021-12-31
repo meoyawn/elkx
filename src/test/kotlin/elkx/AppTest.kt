@@ -1,22 +1,23 @@
 package elkx
 
+import com.google.gson.JsonObject
 import io.vertx.core.DeploymentOptions
 import io.vertx.core.Vertx
 import io.vertx.core.buffer.Buffer
-import io.vertx.core.json.JsonObject
+import io.vertx.ext.web.client.HttpResponse
 import io.vertx.ext.web.client.WebClient
 import io.vertx.ext.web.client.WebClientOptions
+import io.vertx.ext.web.codec.BodyCodec
 import io.vertx.kotlin.coroutines.await
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.async
-import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.joinAll
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
 import org.eclipse.elk.graph.json.JsonImporter
 import org.junit.jupiter.api.AfterAll
 import org.junit.jupiter.api.BeforeAll
 import org.junit.jupiter.api.Test
 import kotlin.test.assertEquals
-import kotlin.test.assertTrue
 
 class AppTest {
 
@@ -32,11 +33,17 @@ class AppTest {
                 .setDefaultPort(port),
         )!!
 
+        suspend fun layoutRPC(b: LayoutBody): HttpResponse<String> =
+            client.post(Routes.JSON)
+                .`as`(BodyCodec.string())
+                .sendGson(b)
+                .await()
+
         @JvmStatic
         @BeforeAll
         fun setUp(): Unit = runBlocking {
             val options = DeploymentOptions()
-                .setConfig(JsonObject(mapOf(ConfigKey.PORT to port)))
+                .setConfig(io.vertx.core.json.JsonObject(mapOf(ConfigKey.PORT to port)))
             vertx.deployVerticle(App(), options).await()
         }
 
@@ -61,23 +68,17 @@ class AppTest {
 
     @Test
     fun `empty json`(): Unit = runBlocking {
-        val resp = client.post(Routes.JSON).sendGson(
-            LayoutBody(
-                root = com.google.gson.JsonObject(),
-                opts = com.google.gson.JsonObject(),
-            )
-        ).await()
+        val resp = layoutRPC(LayoutBody(root = JsonObject(), opts = JsonObject()))
         assertEquals(expected = 400, actual = resp.statusCode())
     }
 
     @Test
     fun `layout values`(): Unit = runBlocking {
-        val body = LayoutBody(gsonParse(resTxt("serverless.json")), gsonParse(resTxt("opts.json")))
-        val resp = client.post(Routes.JSON).sendGson(body).await()
-        assertEquals(expected = 200, actual = resp.statusCode())
+        val r =
+            layoutRPC(LayoutBody(root = gsonParse(resTxt("serverless.json")), opts = gsonParse(resTxt("opts.json"))))
+        assertEquals(expected = 200, actual = r.statusCode())
 
-        val str = resp.bodyAsString()
-        val root = JsonImporter().transform(gsonParse<com.google.gson.JsonObject>(str))
+        val root = JsonImporter().transform(gsonParse<JsonObject>(r.body()))
         assertEquals(expected = 339.0, actual = root.height)
 
         val firstChild = root.children.first()
@@ -86,16 +87,15 @@ class AppTest {
 
     @Test
     fun concurrency(): Unit = runBlocking {
-        val opts = gsonParse<com.google.gson.JsonObject>(resTxt("opts.json"))
+        val opts = gsonParse<JsonObject>(resTxt("opts.json"))
         val bodies = listOf("analysis.json", "ptolemy.json", "serverless.json")
             .map { LayoutBody(gsonParse(resTxt(it)), opts) }
 
-        val codes = (1..100).map {
-            async(Dispatchers.Default) {
-                client.post(Routes.JSON).sendGson(bodies.random()).await().statusCode()
+        (1..100).map {
+            launch(Dispatchers.IO) {
+                val r = layoutRPC(bodies.random())
+                assertEquals(expected = 200, actual = r.statusCode())
             }
-        }.awaitAll()
-
-        assertTrue(codes.all { it == 200 })
+        }.joinAll()
     }
 }

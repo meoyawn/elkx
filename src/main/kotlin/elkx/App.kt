@@ -14,9 +14,7 @@ import io.vertx.ext.web.handler.LoggerFormat
 import io.vertx.ext.web.handler.LoggerHandler
 import io.vertx.kotlin.coroutines.CoroutineVerticle
 import io.vertx.kotlin.coroutines.await
-import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
 import org.eclipse.elk.graph.json.JsonImportException
 
 object ConfigKey {
@@ -32,7 +30,7 @@ data class LayoutBody(
     val opts: JsonObject,
 )
 
-private fun layoutEndpoint(ctx: RoutingContext): Future<Void> {
+private fun layoutSync(ctx: RoutingContext): Future<Void> {
 
     val bodyStr = ctx.bodyAsString ?: return ctx.response().setStatusCode(400).end()
 
@@ -80,15 +78,12 @@ class App : CoroutineVerticle() {
 
         server = vertx.createHttpServer()
             .requestHandler(Router.router(vertx).apply {
-                route().handler(LoggerHandler.create(LoggerFormat.TINY))
+                route()
+                    .handler(LoggerHandler.create(LoggerFormat.TINY))
 
                 post(Routes.JSON)
                     .handler(BodyHandler.create(false))
-                    .coroutineHandler { ctx ->
-                        withContext(Dispatchers.Default) {
-                            layoutEndpoint(ctx)
-                        }
-                    }
+                    .handler(::layoutSync)
             })
             .listen(port, host)
             .await()
