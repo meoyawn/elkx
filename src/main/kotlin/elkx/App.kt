@@ -76,15 +76,17 @@ class App : CoroutineVerticle() {
             ?: System.getenv(ConfigKey.PORT)?.toIntOrNull()
             ?: 8080
 
-        server = vertx.createHttpServer()
-            .requestHandler(Router.router(vertx).apply {
-                route()
-                    .handler(LoggerHandler.create(LoggerFormat.TINY))
+        val router = Router.router(vertx).apply {
+            route()
+                .handler(LoggerHandler.create(LoggerFormat.TINY))
 
-                post(Routes.JSON)
-                    .handler(BodyHandler.create(false))
-                    .handler(::layoutSync)
-            })
+            post(Routes.JSON)
+                .handler(BodyHandler.create(false))
+                .handler(::layoutSync)
+        }
+
+        server = vertx.createHttpServer()
+            .requestHandler(router)
             .listen(port, host)
             .await()
 
