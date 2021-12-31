@@ -27,11 +27,11 @@ class AppTest {
 
         val server = mkServer(port)
 
-        val channel =
+        val chan =
             Grpc.newChannelBuilderForAddress("localhost", port, InsecureChannelCredentials.create())
                 .build()!!
 
-        val stub = ElkXGrpcKt.ElkXCoroutineStub(channel)
+        val stub = ElkXGrpcKt.ElkXCoroutineStub(chan)
 
         @JvmStatic
         @BeforeAll
@@ -43,7 +43,7 @@ class AppTest {
         @AfterAll
         fun tearDown() {
             server.shutdownNow()
-            channel.shutdownNow()
+            chan.shutdownNow()
         }
     }
 

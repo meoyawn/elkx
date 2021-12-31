@@ -14,7 +14,7 @@ suspend fun resTxt(name: Path): String =
         Paths.get(res.toURI()).readText()
     }
 
-suspend fun listDir(name: String) =
+suspend fun listDir(name: String): List<Path> =
     withContext(Dispatchers.IO) {
         val res = javaClass.classLoader.getResource(name) ?: throw NoSuchFileException(name)
         Paths.get(res.toURI()).listDirectoryEntries()
