@@ -4,7 +4,7 @@ package elkx;
 
 message LayoutReq {
     string root = 1;
-    string opts = 2;
+    map<string, string> opts = 2;
 }
 
 message LayoutResp {

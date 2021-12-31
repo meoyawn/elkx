@@ -10,12 +10,12 @@ import kotlin.io.path.readText
 
 suspend fun resTxt(name: Path): String =
     withContext(Dispatchers.IO) {
-        val res = javaClass.classLoader.getResource(name.toString()) ?: throw NoSuchFileException(name.toFile())
+        val res = javaClass.classLoader.getResource(name.toString()) ?: throw NoSuchFileException(name.toString())
         Paths.get(res.toURI()).readText()
     }
 
-suspend fun listDir(name: String): List<Path> =
+suspend fun listDir(name: Path): List<Path> =
     withContext(Dispatchers.IO) {
-        val res = javaClass.classLoader.getResource(name) ?: throw NoSuchFileException(name)
+        val res = javaClass.classLoader.getResource(name.toString()) ?: throw NoSuchFileException(name.toString())
         Paths.get(res.toURI()).listDirectoryEntries()
     }

@@ -22,13 +22,13 @@ private val SERVICE = LayoutMetaDataService.getInstance().apply {
     registerLayoutMetaDataProviders(LayeredMetaDataProvider())
 }
 
-private fun optsToCfg(opts: JsonObject): LayoutConfigurator {
+private fun optsToCfg(opts: Map<String, String>): LayoutConfigurator {
     val lc = LayoutConfigurator()
     lc.addFilter(LayoutConfigurator.NO_OVERWRITE)
 
-    for (key in opts.keySet()) {
-        val option = SERVICE.getOptionDataBySuffix(key) ?: continue
-        val value = option.parseValue(opts.get(key).asString) ?: continue
+    for ((k, v) in opts) {
+        val option = SERVICE.getOptionDataBySuffix(k) ?: continue
+        val value = option.parseValue(v) ?: continue
 
         if (option.targets.contains(LayoutOptionData.Target.NODES) || option.targets.contains(LayoutOptionData.Target.PARENTS)) {
             lc.configure(ElkNode::class.java).setProperty(option, value)
@@ -47,7 +47,7 @@ private fun optsToCfg(opts: JsonObject): LayoutConfigurator {
     return lc
 }
 
-fun layout(rootJson: JsonObject, opts: JsonObject) {
+fun layout(rootJson: JsonObject, opts: Map<String, String>) {
     val imp = JsonImporter()
     val rootNode = imp.transform(rootJson)
     ElkUtil.applyVisitors(rootNode, optsToCfg(opts))

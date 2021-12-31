@@ -10,7 +10,7 @@ private class ElkService : ElkXGrpcKt.ElkXCoroutineImplBase(Dispatchers.Default)
     override suspend fun layout(request: Elkx.LayoutReq): Elkx.LayoutResp {
         val obj = gsonParse(request.root)
 
-        layout(obj, gsonParse(request.opts))
+        layout(obj, request.optsMap)
 
         return layoutResp { root = gsonStringify(obj) }
     }

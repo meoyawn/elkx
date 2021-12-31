@@ -13,3 +13,6 @@ fun gsonParse(s: String): JsonObject =
 
 fun <T> gsonStringify(x: T): String =
     gson.toJson(x)
+
+fun parseMap(s: String): Map<String, String> =
+    gson.fromJson(s, Map::class.java) as Map<String, String>

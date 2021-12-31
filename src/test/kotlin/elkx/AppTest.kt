@@ -60,7 +60,6 @@ class AppTest {
         val e = assertThrows<StatusException> {
             stub.layout(layoutReq {
                 root = "foo"
-                opts = "bar"
             })
         }
         assertEquals(expected = Status.UNKNOWN, actual = e.status)
@@ -71,7 +70,6 @@ class AppTest {
         val e = assertThrows<StatusException> {
             stub.layout(layoutReq {
                 root = gsonStringify(JsonObject())
-                opts = gsonStringify(JsonObject())
             })
         }
         assertEquals(expected = Status.UNKNOWN, actual = e.status)
@@ -81,7 +79,7 @@ class AppTest {
     fun `layout values`(): Unit = runBlocking {
         val resp = stub.layout(layoutReq {
             root = resTxt(Paths.get("jsons", "serverless.json"))
-            opts = resTxt(Paths.get("opts.json"))
+            opts.putAll(parseMap(resTxt(Paths.get("opts.json"))))
         })
 
         val str = resp.root
@@ -94,11 +92,11 @@ class AppTest {
 
     @Test
     fun concurrency(): Unit = runBlocking {
-        val optsJson = resTxt(Paths.get("opts.json"))
-        val bodies = listDir("jsons").map {
+        val optsJson = parseMap(resTxt(Paths.get("opts.json")))
+        val bodies = listDir(Paths.get("jsons")).map {
             layoutReq {
                 root = resTxt(Paths.get("jsons", it.name))
-                opts = optsJson
+                opts.putAll(optsJson)
             }
         }
 
